@@ -1,20 +1,28 @@
-import { NextRequest }   from "next/server";
+// In this also made a changes for the deployment
 
+import { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 
-
-
-export const getDataFromToken = (request: NextRequest) =>{
-    try{
-
-        const token = request.cookies.get("token")?.
-        value || '';
-
-        const decodedToken:any = jwt.verify(token , process.env.TOKEN_SECRET!);
-        return decodedToken.id;
-    }catch(error:any){
-
-        throw new Error(error.message)
-
-    }
+// Define an interface for the token payload
+interface TokenPayload {
+    id: string;
+    iat?: number;
+    exp?: number;
 }
+
+export const getDataFromToken = (request: NextRequest): string | null => {
+    try {
+        // Extract token from cookies
+        const token = request.cookies.get("token")?.value || "";
+
+        // Verify and decode token with correct type
+        const decodedToken = jwt.verify(token, process.env.TOKEN_SECRET!) as TokenPayload;
+
+        return decodedToken.id;
+    } catch (error) {
+        if (error instanceof Error) {
+            throw new Error(error.message);
+        }
+        throw new Error("An unknown error occurred");
+    }
+};

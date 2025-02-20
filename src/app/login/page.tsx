@@ -1,10 +1,11 @@
+// In this also changes are made for the deployment
+
 "use client";
 import Link from "next/link";
-import React, { useState }  from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { useEffect } from "react";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -13,11 +14,7 @@ export default function LoginPage() {
         password: "",
     });
 
-    const [buttonDisabled , setButtonDisabled] = useState(false);
     const [loading, setLoading] = useState(false);
-
-
-
 
     const onLogin = async () => {
         try {
@@ -26,29 +23,19 @@ export default function LoginPage() {
             console.log("Login success", response.data);
             toast.success("Login successful! Redirecting...");
             router.push("/profile");
-        } catch (error: any) {
-            console.log("Login failed", error.message);
-            toast.error("Invalid credentials. Please try again.");
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+                console.log("Login failed", error.response?.data?.message || error.message);
+                toast.error(error.response?.data?.message || "Invalid credentials. Please try again.");
+            } else {
+                console.log("Unexpected error", error);
+                toast.error("Something went wrong. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
     };
 
-
-    useEffect (() => {
-
-        if(user.email.length > 0 && user.password.length > 0) {
-            setButtonDisabled(false);
-
-        }
-        else {
-            setButtonDisabled(true);
-        }
-
-    } , [user])
-
-
-    
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
             <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8 space-y-6">
@@ -95,7 +82,7 @@ export default function LoginPage() {
                     </button>
 
                     <p className="text-center text-sm text-gray-600">
-                        Don't have an account?{" "}
+                        Don&apos;t have an account?{" "}
                         <Link href="/signup" className="text-indigo-600 hover:underline">
                             Sign up here
                         </Link>

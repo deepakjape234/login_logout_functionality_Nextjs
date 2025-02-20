@@ -1,25 +1,32 @@
+//  In thsi also changes are made for the deploymemt
+
 "use client";
 import axios from "axios";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 export default function VerifyEmailPage() {
     const [token, setToken] = useState("");
     const [verified, setVerified] = useState(false);
     const [error, setError] = useState(false);
 
-    const verifyUserEmail = async () => {
+    const verifyUserEmail = useCallback(async () => {
         try {
-            axios.post("/api/users/verifyemail", { token });
+            await axios.post("/api/users/verifyemail", { token });
             setVerified(true);
-        } catch (error: any) {
+        } catch (error: unknown) {  // ✅ Explicitly define 'error' as 'unknown'
             setError(true);
-            console.log(error.response.data);
+
+            if (axios.isAxiosError(error)) {
+                console.log(error.response?.data || "Unknown Axios error");
+            } else {
+                console.log("An unexpected error occurred:", error);
+            }
         }
-    };
+    }, [token]);  // ✅ Memoized function to avoid React warnings
 
     useEffect(() => {
-        const urlToken = window.location.search.split("=")[1];
+        const urlToken = new URLSearchParams(window.location.search).get("token");
         setToken(urlToken || "");
     }, []);
 
@@ -27,7 +34,7 @@ export default function VerifyEmailPage() {
         if (token.length > 0) {
             verifyUserEmail();
         }
-    }, [token]);
+    }, [token, verifyUserEmail]);  // ✅ Now 'verifyUserEmail' is included
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">

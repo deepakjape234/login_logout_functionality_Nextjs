@@ -1,3 +1,5 @@
+// In this also changes are made for the deployment
+
 "use client";
 import axios from "axios";
 import Link from "next/link";
@@ -15,21 +17,34 @@ export default function ProfilePage() {
             await axios.get("/api/users/logout");
             toast.success("Logout successful");
             router.push('/login');
-        } catch (error: any) {
-            console.log(error.message);
-            toast.error(error.message);
+        } catch (error: unknown) { // Fix: Use 'unknown' instead of 'any'
+            if (axios.isAxiosError(error)) {
+                console.log(error.response?.data || "Unknown Axios error");
+                toast.error(error.response?.data?.message || "Logout failed");
+            } else if (error instanceof Error) {
+                console.log("An unexpected error occurred:", error.message);
+                toast.error(error.message);
+            } else {
+                console.log("An unknown error occurred.");
+                toast.error("An unknown error occurred.");
+            }
         }
     };
-
+    
     const getUserDetails = async () => {
         try {
             const res = await axios.get('/api/users/me');
             console.log(res.data);
             setData(res.data.data._id);
-        } catch (error: any) {
-            toast.error("Failed to fetch user details");
+        } catch (error: unknown) {  // Fix: Use 'unknown' instead of 'any'
+            if (axios.isAxiosError(error)) {
+                toast.error(error.response?.data?.message || "Failed to fetch user details");
+            } else {
+                toast.error("An unexpected error occurred while fetching user details");
+            }
         }
     };
+    
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-6">

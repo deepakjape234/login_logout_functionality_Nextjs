@@ -1,3 +1,5 @@
+// In this also changes are made during hte deployment
+
 "use client";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -23,13 +25,22 @@ export default function SignupPage() {
             console.log("Signup success", response.data);
             toast.success("Signup successful! Redirecting...");
             router.push("/login");
-        } catch (error: any) {
-            console.log("Signup failed", error.message);
-            toast.error(error.message);
+        } catch (error: unknown) { // Fix: Use 'unknown' instead of 'any'
+            if (axios.isAxiosError(error)) {
+                console.log("Signup failed", error.response?.data || "Unknown Axios error");
+                toast.error(error.response?.data?.message || "Signup failed");
+            } else if (error instanceof Error) {
+                console.log("An unexpected error occurred:", error.message);
+                toast.error(error.message);
+            } else {
+                console.log("An unknown error occurred.");
+                toast.error("An unknown error occurred.");
+            }
         } finally {
             setLoading(false);
         }
     };
+    
 
     useEffect(() => {
         setButtonDisabled(!(user.email && user.password && user.username));

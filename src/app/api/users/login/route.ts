@@ -1,3 +1,5 @@
+// In this also changes are made for the deployment
+
 import { connect } from "@/dbConfig/dbConfig";
 import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
@@ -44,8 +46,11 @@ export async function POST(request: NextRequest) {
 
     console.log("✅ Login successful!");
     return response;
-  } catch (error: any) {
-    console.error("❌ Server Error:", error.message);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("❌ Server Error:", error.message);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: "An unknown error occurred" }, { status: 500 });
   }
 }

@@ -1,28 +1,24 @@
-import {connect} from "@/dbConfig/dbConfig";
-import { NextRequest , NextResponse } from "next/server";
+// In this also changes are made for the deployment
 
+import { connect } from "@/dbConfig/dbConfig";
+import { NextRequest, NextResponse } from "next/server";
 import User from "@/models/userModel";
 
+connect();
 
-
-connect()
-
-
-export async function POST(request: NextRequest){
-
-    try{
-
-        const reqBody = await request.json()
-        const {token} = reqBody
+export async function POST(request: NextRequest) {
+    try {
+        const reqBody = await request.json();
+        const { token } = reqBody;
         console.log(token);
 
-
-        const user = await User.findOne({verifyToken:
-            token , verifyTokenExpiry: {$gt: Date.now()}
+        const user = await User.findOne({
+            verifyToken: token,
+            verifyTokenExpiry: { $gt: Date.now() },
         });
 
-        if(!user){
-            return NextResponse.json({error: "Invalid token"},{status: 400})
+        if (!user) {
+            return NextResponse.json({ error: "Invalid token" }, { status: 400 });
         }
 
         console.log(user);
@@ -32,19 +28,14 @@ export async function POST(request: NextRequest){
         user.verifyTokenExpiry = undefined;
         await user.save();
 
-
         return NextResponse.json({
             message: "Email verified successfully",
-            success: true
-        })
-
-
-
-    } catch(error:any){
-        return NextResponse.json({error: error.message},
-            {status:500}
-        )
-
+            success: true,
+        });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+        return NextResponse.json({ error: "An unknown error occurred" }, { status: 500 });
     }
-
 }
